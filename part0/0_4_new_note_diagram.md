@@ -4,10 +4,10 @@ sequenceDiagram
     participant server
 
     browser->>server: POST https://studies.cs.helsinki.fi/exampleapp/new_note
+    Note left of server: The server saves the posted note in an array.
     activate server
     server-->>browser: Redirect
     deactivate server
-    Note left of server: The server saves the posted note in an array.
 
     browser->>server: GET https://studies.cs.helsinki.fi/exampleapp/notes
     activate server
