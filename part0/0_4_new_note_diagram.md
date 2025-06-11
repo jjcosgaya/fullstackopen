@@ -7,7 +7,7 @@ sequenceDiagram
     activate server
     server-->>browser: Redirect
     deactivate server
-    Note right of browser: The server saves the posted note in an array.
+    Note left of server: The server saves the posted note in an array.
 
     browser->>server: GET https://studies.cs.helsinki.fi/exampleapp/notes
     activate server
