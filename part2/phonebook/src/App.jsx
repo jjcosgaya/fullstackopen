@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
 import personService from './services/persons.js'
+import './App.css'
 
 const App = () => {
-  const [persons, setPersons] = useState([])
-  const [newName, setNewName] = useState('')
-  const [newNumber, setNewNumber] = useState('')
-  const [query, setQuery] = useState('')
+  const [persons, setPersons] = useState([]);
+  const [newName, setNewName] = useState('');
+  const [newNumber, setNewNumber] = useState('');
+  const [query, setQuery] = useState('');
+  const [message, setMessage] = useState(null);
+  const [isError, setIsError] = useState(false);
   
   useEffect(() => {
     personService.getAll()
@@ -16,11 +19,12 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={message} isError={isError}/>
       <Filter setQuery={setQuery} query={query}/>
       <h2>Add a new</h2>
-      <PersonForm persons={persons} newName={newName} newNumber={newNumber} setPersons={setPersons} setNewName={setNewName} setNewNumber={setNewNumber} />
+      <PersonForm persons={persons} newName={newName} newNumber={newNumber} setPersons={setPersons} setNewName={setNewName} setNewNumber={setNewNumber} setMessage={setMessage}/>
       <h2>Numbers</h2>
-      <Persons persons={persons} query={query} setPersons={setPersons}/>
+      <Persons persons={persons} query={query} setPersons={setPersons} setMessage={setMessage} setIsError={setIsError}/>
     </div>
   )
 }
@@ -34,7 +38,7 @@ const Filter = ({setQuery, query}) => {
   )
 }
 
-const PersonForm = ({ persons, setPersons, setNewName, setNewNumber, newName, newNumber}) => {
+const PersonForm = ({ persons, setPersons, setNewName, setNewNumber, newName, newNumber, setMessage}) => {
   const validatePerson = (name) => !persons.some(person => person.name === name);
   const handleSubmit = e => {
     e.preventDefault();
@@ -46,6 +50,8 @@ const PersonForm = ({ persons, setPersons, setNewName, setNewNumber, newName, ne
           setPersons(newPersons);
           setNewName("")
           setNewNumber("")
+          setMessage(`${res.name} added`)
+          setTimeout(() => setMessage(null), 5000)
         })
       .catch(() => alert('Error'))
     }
@@ -59,6 +65,8 @@ const PersonForm = ({ persons, setPersons, setNewName, setNewNumber, newName, ne
             setPersons(persons.map(person => person.name === newName ? data : person))
             setNewName("")
             setNewNumber("")
+            setMessage(`${data.name}'s number updated to ${data.number}`)
+            setTimeout(() => setMessage(null), 5000)
           })
       }
     }
@@ -86,13 +94,24 @@ const PersonForm = ({ persons, setPersons, setNewName, setNewNumber, newName, ne
   )
 }
 
-const Persons = ({persons, query, setPersons}) => {
+const Persons = ({persons, query, setPersons, setMessage, setIsError}) => {
   const deletePerson = person => {
     if ( window.confirm(`Are you sure you want to delete ${person.name}?`) ) {
       personService.deletePerson(person)
         .then(res => {
           const newPersons = persons.filter(person => person.id !== res.id) ;
           setPersons(newPersons);
+        })
+        .catch(res => {
+          if (res.status === 404){
+            setMessage(`Error, ${person.name} was already deleted from the server`)
+            setIsError(true)
+            setTimeout(() => { setMessage(null); setIsError(false) }, 5000)
+
+            const newPersons = persons.filter(p => p.id !== person.id) ;
+            setPersons(newPersons);
+          }
+          else throw res;
         })
     }
   }
@@ -106,6 +125,18 @@ const Persons = ({persons, query, setPersons}) => {
             <button onClick={() => deletePerson(person)}>delete</button>
           </li>)}
     </ul>
+  )
+}
+
+const Notification = ({ message, isError }) => {
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className='error' style={isError ? {color: 'red'} : {}}>
+      {message}
+    </div>
   )
 }
 
