@@ -22,7 +22,7 @@ const App = () => {
       <Notification message={message} isError={isError}/>
       <Filter setQuery={setQuery} query={query}/>
       <h2>Add a new</h2>
-      <PersonForm persons={persons} newName={newName} newNumber={newNumber} setPersons={setPersons} setNewName={setNewName} setNewNumber={setNewNumber} setMessage={setMessage}/>
+      <PersonForm persons={persons} newName={newName} newNumber={newNumber} setPersons={setPersons} setNewName={setNewName} setNewNumber={setNewNumber} setMessage={setMessage} setIsError={setIsError}/>
       <h2>Numbers</h2>
       <Persons persons={persons} query={query} setPersons={setPersons} setMessage={setMessage} setIsError={setIsError}/>
     </div>
@@ -38,7 +38,7 @@ const Filter = ({setQuery, query}) => {
   )
 }
 
-const PersonForm = ({ persons, setPersons, setNewName, setNewNumber, newName, newNumber, setMessage}) => {
+const PersonForm = ({ persons, setPersons, setNewName, setNewNumber, newName, newNumber, setMessage, setIsError}) => {
   const validatePerson = (name) => !persons.some(person => person.name === name);
   const handleSubmit = e => {
     e.preventDefault();
@@ -53,7 +53,11 @@ const PersonForm = ({ persons, setPersons, setNewName, setNewNumber, newName, ne
           setMessage(`${res.name} added`)
           setTimeout(() => setMessage(null), 5000)
         })
-      .catch(() => alert('Error'))
+        .catch((error) => {
+          setMessage(error.response.data.error)        
+          setIsError(true);
+          setTimeout(() => { setMessage(null); setIsError(false) }, 5000)
+        })
     }
     else {
       const confirmed = window.confirm(`${newName} is already added to the phonebook, do you wish to replace the old phone number with the new one?`);
@@ -67,6 +71,11 @@ const PersonForm = ({ persons, setPersons, setNewName, setNewNumber, newName, ne
             setNewNumber("")
             setMessage(`${data.name}'s number updated to ${data.number}`)
             setTimeout(() => setMessage(null), 5000)
+          })
+          .catch((error) => {
+            setMessage(error.response.data.error)        
+            setIsError(true);
+            setTimeout(() => { setMessage(null); setIsError(false) }, 5000)
           })
       }
     }
