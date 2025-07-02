@@ -217,7 +217,7 @@ describe('mostBlogs function', () => {
     const most = {
       author: 'Edsger W. Dijkstra',
       blogs: 1
-    }
+    };
     assert.deepStrictEqual(result, most);
   });
   test('list with several blogs', () => {
